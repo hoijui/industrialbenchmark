@@ -72,7 +72,7 @@ class IDS(object):
         self.state['gs_phi_idx'] = self.gsEnvironment._dynamics._Phi_idx
         self.state['ge'] = 0. # effective gain beta
         self.state['ve'] = 0. # effective velocity alpha
-        self.state['MC'] = 0.
+        self.state['MC'] = 0. # mis-calibration
         self.state['c'] = 0. # consumption
         self.state['p'] = p  # SetPoint
         self.state['v'] = 50. # Velocity
