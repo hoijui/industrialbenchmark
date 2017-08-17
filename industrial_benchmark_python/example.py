@@ -38,7 +38,7 @@ for k in range(n_trajectories):
     for t in range(T):
         at = 2 * np.random.rand(3) -1
         env.step(at)
-        data[k,t] = env.visibleState()[-1] 
+        data[k,t] = env.visibleState()[-1]
 
 
 plt.plot(data.T)
