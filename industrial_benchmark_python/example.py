@@ -24,6 +24,20 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 '''
+
+import os
+import sys
+
+this_files_dir = os.path.dirname(os.path.realpath(__file__))
+# We just assume we are in the siemens/industrialbenchmark sources
+# ('/industrialbenchmark/ industrial_benchmark_python/')
+project_source_root = os.path.join(this_files_dir, '..')
+
+# Append some required import directories
+sys.path.append(project_source_root)
+sys.path.append(os.path.join(project_source_root, 'industrial_benchmark_python'))
+sys.path.append(os.path.join(project_source_root, 'industrial_benchmark_python', 'goldstone'))
+
 from IDS import IDS
 import numpy as np
 import pylab as plt
