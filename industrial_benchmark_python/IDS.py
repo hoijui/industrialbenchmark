@@ -91,7 +91,7 @@ class IDS(object):
         return np.array([self.state['p'],self.state['v'],self.state['g'],self.state['s'],self.state['f'],self.state['c'],self.state['cost']])
 
     def markovState(self):
-        return np.hstack((self.state['o'],np.array([self.state[k] for k in self.state.keys()[1:]])))
+        return self.state
 
 
     def step(self,delta):
