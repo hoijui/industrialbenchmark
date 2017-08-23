@@ -51,16 +51,28 @@ indBenEnv = IndustrialBenchmarkEnv.IndustrialBenchmarkEnv(sim_props_file)
 
 print("\nindBenEnv.reward_range:")
 print(indBenEnv.reward_range)
-print("\nindBenEnv.action_space (len: %d):" % len(indBenEnv.action_space))
+print("")
+
+print("\nindBenEnv.action_space:")
+#print("\tlen: %d" % len(indBenEnv.action_space))
 print(indBenEnv.action_space)
-print("\nindBenEnv.observation_space (len: %d):" % len(indBenEnv.observation_space))
+print("\tsample:")
+print(indBenEnv.action_space.sample())
+print("")
+
+print("\nindBenEnv.observation_space:")
+#print("\tlen: %d" % len(indBenEnv.observation_space))
 print(indBenEnv.observation_space)
+print("\tsample:")
+print(indBenEnv.observation_space.sample())
+print("")
 
 # Execute a single step
-action = {
-		IndustrialBenchmarkEnv.DELTA_VELOCITY: 0.1,
-		IndustrialBenchmarkEnv.DELTA_GAIN: 0.1,
-		IndustrialBenchmarkEnv.DELTA_SHIFT: 0.1}
+action = (
+	0.1, # IndustrialBenchmarkEnv.DELTA_VELOCITY
+	0.1, # IndustrialBenchmarkEnv.DELTA_GAIN
+	0.1 # IndustrialBenchmarkEnv.DELTA_SHIFT
+	)
 [observation, reward, done, info] = indBenEnv.step(action)
 
 print("\nobservation (len: %d):" % len(observation))
@@ -74,9 +86,11 @@ print(info)
 print("")
 
 # Some more testing
-indBenEnv.step(action)
+[observation, reward, done, info] = indBenEnv.step(action)
+
 indBenEnv.seed(12345)
-indBenEnv.step(action)
+[observation, reward, done, info] = indBenEnv.step(action)
+
 indBenEnv.seed(123456)
 indBenEnv.reset()
-indBenEnv.step(action)
+[observation, reward, done, info] = indBenEnv.step(action)

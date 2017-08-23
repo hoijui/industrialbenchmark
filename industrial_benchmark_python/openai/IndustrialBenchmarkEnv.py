@@ -28,9 +28,15 @@ SOFTWARE.
 import jpype
 import gym
 import os
+import sys
+import random
+import gym
+from gym import spaces
 from IDS import IDS
+from NamedShape import NamedShape
 import numpy as np
 import time
+import collections
 
 # Input vars
 DELTA_VELOCITY = "DeltaVelocity"
@@ -38,42 +44,42 @@ DELTA_GAIN = "DeltaGain"
 DELTA_SHIFT = "DeltaShift"
 
 # Output vars
-SET_POINT = "SetPoint"
-FATIGUE = "Fatigue"
-FATIGUE_BASE = "FatigueBase"
-REWARD_TOTAL = "RewardTotal"
-OPERATIONAL_COSTS_CONV = "OperationalCostsConv"
 ACTION_VELOCITY = "Velocity"
 ACTION_GAIN = "Gain"
 ACTION_SHIFT = "Shift"
 CONSUMPTION = "Consumption"
-MIS_CALIBRATION = "MisCalibration"
+CURRENT_OPERATIONAL_COST = "CurrentOperationalCost"
 EFFECTIVE_ACTION_GAIN_BETA = "EffectiveActionGainBeta"
 EFFECTIVE_ACTION_VELOCITY_ALPHA = "EffectiveActionVelocityAlpha"
-RANDOM_SEED = "RandomSeed"
+FATIGUE = "Fatigue"
+FATIGUE_BASE = "FatigueBase"
+OPERATIONAL_COSTS_CONV = "OperationalCostsConv"
+MIS_CALIBRATION = "MisCalibration"
 MIS_CALIBRATION_DOMAIN = "MisCalibrationDomain"
 MIS_CALIBRATION_SYSTEM_RESPONSE = "MisCalibrationSystemResponse"
 MIS_CALIBRATION_PHI_IDX = "MisCalibrationPhiIdx"
-CURRENT_OPERATIONAL_COST = "CurrentOperationalCost"
+RANDOM_SEED = "RandomSeed"
+REWARD_TOTAL = "RewardTotal"
+SET_POINT = "SetPoint"
 
-LONG_TO_SHORT = dict(
-	SET_POINT = 'p',
-	FATIGUE = 'f',
-	FATIGUE_BASE = 'fb',
-	REWARD_TOTAL = 'cost',
-	OPERATIONAL_COSTS_CONV = 'oc',
-	ACTION_VELOCITY = 'v',
-	ACTION_GAIN = 'g',
-	ACTION_SHIFT = 's',
-	CONSUMPTION = 'c',
-	MIS_CALIBRATION = 'MC',
-	EFFECTIVE_ACTION_GAIN_BETA = 'ge',
-	EFFECTIVE_ACTION_VELOCITY_ALPHA = 've',
-	RANDOM_SEED = 'seed',
-	MIS_CALIBRATION_DOMAIN = 'gs_domain',
-	MIS_CALIBRATION_SYSTEM_RESPONSE = 'gs_sys_response',
-	MIS_CALIBRATION_PHI_IDX = 'gs_phi_idx',
-	CURRENT_OPERATIONAL_COST = 'coc')
+LONG_TO_SHORT = collections.OrderedDict()
+LONG_TO_SHORT[ACTION_VELOCITY] = 'v'
+LONG_TO_SHORT[ACTION_GAIN] = 'g'
+LONG_TO_SHORT[ACTION_SHIFT] = 's'
+LONG_TO_SHORT[CONSUMPTION] = 'c'
+LONG_TO_SHORT[CURRENT_OPERATIONAL_COST] = 'coc'
+LONG_TO_SHORT[EFFECTIVE_ACTION_GAIN_BETA] = 'ge'
+LONG_TO_SHORT[EFFECTIVE_ACTION_VELOCITY_ALPHA] = 've'
+LONG_TO_SHORT[FATIGUE] = 'f'
+LONG_TO_SHORT[FATIGUE_BASE] = 'fb'
+LONG_TO_SHORT[OPERATIONAL_COSTS_CONV] = 'oc'
+LONG_TO_SHORT[MIS_CALIBRATION] = 'MC'
+LONG_TO_SHORT[MIS_CALIBRATION_DOMAIN] = 'gs_domain'
+LONG_TO_SHORT[MIS_CALIBRATION_PHI_IDX] = 'gs_phi_idx'
+LONG_TO_SHORT[MIS_CALIBRATION_SYSTEM_RESPONSE] = 'gs_sys_response'
+LONG_TO_SHORT[RANDOM_SEED] = 'seed'
+LONG_TO_SHORT[REWARD_TOTAL] = 'cost'
+LONG_TO_SHORT[SET_POINT] = 'p'
 # These i could not link to anything (in Java industrialbenchmark),
 # but they sound not particularly useful/important.. right? ;-)
 #self.state['o'] = np.zeros(10) #  operational cost buffer
@@ -81,7 +87,7 @@ LONG_TO_SHORT = dict(
 #self.state['hv'] = 0. # hidden velocity
 #self.state['hs'] = 0. # hidden shift
 
-SHORT_TO_LONG = dict()
+SHORT_TO_LONG = collections.OrderedDict()
 for l in LONG_TO_SHORT.keys():
 	SHORT_TO_LONG[LONG_TO_SHORT[l]] = l
 
@@ -120,7 +126,7 @@ class IndustrialBenchmarkEnv(gym.Env):
 
 		self._sim_props_file = sim_props_file
 		# TODO loadproperties file, and set the contained values in the IDS/_industrial_benchmark_dynamics
-
+		'''
 		#self._props = self._jpkg_ind_bench_properties.PropertiesUtil.loadSetPointProperties(jpype.java.io.File(self._sim_props_file));
 		#self._java_env = self._jpkg_ind_bench_dyn.IndustrialBenchmarkDynamics(self._props)
 		#self._action = self._jpkg_ind_bench_data_vec_action.ActionDelta(0.0, 0.0, 0.0)
@@ -138,22 +144,75 @@ class IndustrialBenchmarkEnv(gym.Env):
 		#self.observation_space = self._industrial_benchmark_dynamics.markovState().keys()
 		self.observation_space = LONG_TO_SHORT.keys()
 		#self.observation_space = SHORT_TO_LONG.keys()
+		'''
+		'''
+		self.reward_range = ( -6500, 0 )
+		self.action_space = [ DELTA_VELOCITY, DELTA_GAIN, DELTA_SHIFT ] # TODO?
+		self.observation_space = LONG_TO_SHORT.keys()
+		'''
+
+		fMin = sys.float_info.min
+		fMax = sys.float_info.max
+
+		self.reward_range = ( -6500, 0 )
+
+		self.action_space = spaces.Tuple((
+			NamedShape(DELTA_VELOCITY, spaces.Box(0.0, 100.0, 1)),
+			NamedShape(DELTA_GAIN, spaces.Box(0.0, 100.0, 1)),
+			NamedShape(DELTA_SHIFT, spaces.Box(0.0, 100.0, 1))
+			))
+
+		self.observation_space = spaces.Tuple((
+			NamedShape(ACTION_VELOCITY, spaces.Box(fMin, fMax, 1)),
+			NamedShape(ACTION_GAIN, spaces.Box(fMin, fMax, 1)),
+			NamedShape(ACTION_SHIFT, spaces.Box(fMin, fMax, 1)),
+			NamedShape(CONSUMPTION, spaces.Box(fMin, fMax, 1)),
+			NamedShape(CURRENT_OPERATIONAL_COST, spaces.Box(fMin, fMax, 1)),
+			NamedShape(EFFECTIVE_ACTION_GAIN_BETA, spaces.Box(fMin, fMax, 1)),
+			NamedShape(EFFECTIVE_ACTION_VELOCITY_ALPHA, spaces.Box(fMin, fMax, 1)),
+			NamedShape(FATIGUE, spaces.Box(fMin, fMax, 1)),
+			NamedShape(FATIGUE_BASE, spaces.Box(fMin, fMax, 1)),
+			NamedShape(OPERATIONAL_COSTS_CONV, spaces.Box(fMin, fMax, 1)),
+			NamedShape(MIS_CALIBRATION, spaces.Box(fMin, fMax, 1)),
+			NamedShape(MIS_CALIBRATION_DOMAIN, spaces.Box(fMin, fMax, 1)),
+			NamedShape(MIS_CALIBRATION_PHI_IDX, spaces.Box(fMin, fMax, 1)),
+			NamedShape(MIS_CALIBRATION_SYSTEM_RESPONSE, spaces.Box(fMin, fMax, 1)),
+			NamedShape(RANDOM_SEED, spaces.Box(fMin, fMax, 1)),
+			NamedShape(REWARD_TOTAL, spaces.Box(fMin, fMax, 1)),
+			NamedShape(SET_POINT, spaces.Box(fMin, fMax, 1)),
+			))
 
 		self.internal_seed(int(time.time()))
 
+	def _markov_state_to_observation(self, markov_state):
+
+		#observation = markov_state
+
+		#observation = dict()
+		#for s in markov_state.keys():
+			#if (s in SHORT_TO_LONG):
+				#observation[SHORT_TO_LONG[s]] = markov_state[s]
+		#observation[RANDOM_SEED] = self.current_seed
+
+		observation = []
+		for s in SHORT_TO_LONG:
+			if s == LONG_TO_SHORT[RANDOM_SEED]:
+				observation.append(self.current_seed)
+			else:
+				observation.append(markov_state[s])
+
+		return observation
+
 	def _step(self, action):
 
-		internalAction = [action[DELTA_VELOCITY], action[DELTA_GAIN], action[DELTA_SHIFT]]
+		#internalAction = [action[DELTA_VELOCITY], action[DELTA_GAIN], action[DELTA_SHIFT]]
+		internalAction = action
 
-		reward = self._industrial_benchmark_dynamics.step(internalAction)
+		markov_state = self._industrial_benchmark_dynamics.markovState()
 
-		#observation = self._industrial_benchmark_dynamics.markovState()
-		markovState = self._industrial_benchmark_dynamics.markovState()
-		observation = dict()
-		for s in markovState.keys():
-			if (s in SHORT_TO_LONG):
-				observation[SHORT_TO_LONG[s]] = markovState[s]
-		observation[RANDOM_SEED] = self.current_seed
+		reward = markov_state[LONG_TO_SHORT[REWARD_TOTAL]]
+
+		observation = self._markov_state_to_observation(markov_state)
 
 		done = False # never finnished
 		info = None # XXX Anything useful we could put here?
@@ -177,6 +236,11 @@ class IndustrialBenchmarkEnv(gym.Env):
 		# If it should prove to not be enough:
 		# TODO FIXME extend the python industrial benchmark with an internally kept seed value
 		self.current_seed = seed
+
+		# Set Python's random seed
+		random.seed(self.current_seed)
+
 		# Set Numpy's random seed
 		np.random.seed(self.current_seed)
+
 		return [self.current_seed]
