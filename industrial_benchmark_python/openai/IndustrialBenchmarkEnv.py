@@ -161,6 +161,7 @@ class IndustrialBenchmarkEnv(gym.Env):
 			NamedShape(DELTA_GAIN, spaces.Box(0.0, 100.0, 1)),
 			NamedShape(DELTA_SHIFT, spaces.Box(0.0, 100.0, 1))
 			))
+		self.action_space.n = 3 # HACK workaround some strange version incompatibility issue
 
 		self.observation_space = spaces.Tuple((
 			NamedShape(ACTION_VELOCITY, spaces.Box(fMin, fMax, 1)),
@@ -179,8 +180,9 @@ class IndustrialBenchmarkEnv(gym.Env):
 			NamedShape(MIS_CALIBRATION_SYSTEM_RESPONSE, spaces.Box(fMin, fMax, 1)),
 			NamedShape(RANDOM_SEED, spaces.Box(fMin, fMax, 1)),
 			NamedShape(REWARD_TOTAL, spaces.Box(fMin, fMax, 1)),
-			NamedShape(SET_POINT, spaces.Box(fMin, fMax, 1)),
+			NamedShape(SET_POINT, spaces.Box(fMin, fMax, 1))
 			))
+		self.observation_space.n = 16 # HACK workaround some strange version incompatibility issue
 
 		self.internal_seed(int(time.time()))
 
